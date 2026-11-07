@@ -39,7 +39,7 @@ from game import Action, AgentConfig, HandResult, Observation, Street
 warmup()
 
 # rename as your team/bot's name
-PARTICIPANT = "TEAM_NAME_HERE"
+PARTICIPANT = "penberthy-pushers"
 AGENT_NAME = "ShortStackShark"
 
 
