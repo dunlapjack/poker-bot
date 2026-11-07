@@ -43,6 +43,11 @@ PF_IMPLIED = float(os.environ.get("PF_IMPLIED", "0.04"))
 ARCH_N = float(os.environ.get("ARCH_N", "40"))
 ARCH_FOLD = float(os.environ.get("ARCH_FOLD", "0.62"))
 ARCH_STATION = float(os.environ.get("ARCH_STATION", "0.22"))
+RAISE_TH = float(os.environ.get("RAISE_TH", "0.70"))
+VALUE_HI = float(os.environ.get("VALUE_HI", "0.60"))
+VALUE_LO = float(os.environ.get("VALUE_LO", "0.53"))
+POT_GAP = float(os.environ.get("POT_GAP", "0.08"))
+IMPLIED_POST = float(os.environ.get("IMPLIED_POST", "0.0"))
 COMMIT_SPR = float(os.environ.get("V2_CSPR", "3.0"))          # use the engine at SPR <= this
 HANDS_PER_HALF = 1000
 
@@ -314,10 +319,10 @@ def _decide(obs, mem) -> Action:
     elif committed and can_raise:
         return Action.RAISE_POT                                       # build the pot to commit
     if call > 0:
-        raise_th = 0.70 + 0.05 * obs.raises_this_street
+        raise_th = RAISE_TH + 0.05 * obs.raises_this_street
         if eq >= raise_th and can_raise:
             return Action.RAISE_POT
-        margin = 0.0 if river else -0.03 * min(spr_after, 2)   # implied odds on earlier streets
+        margin = 0.0 if river else -IMPLIED_POST * min(spr_after, 2)   # implied odds on earlier streets
         if spr_after < 0.5:
             margin -= 0.04                                        # pot-committed
         if eqr >= pot_odds + margin:
@@ -326,12 +331,12 @@ def _decide(obs, mem) -> Action:
 
     # no bet to us: value bet / bluff / check
     kind, conf = archetype(m)
-    value_th = 0.66 if fold_rate > 0.35 else 0.60                # vs stations bet thinner
+    value_th = VALUE_HI if fold_rate > 0.35 else VALUE_LO        # vs stations bet thinner
     if kind == "station":
         value_th -= 0.03 * conf
     if kind == "folder" and can_raise and eq < value_th and rng.random() < conf:
         return Action.RAISE_HALF                                  # cheapest bet that wins the pot
-    if eq >= value_th + 0.08 and can_raise:
+    if eq >= value_th + POT_GAP and can_raise:
         return Action.RAISE_POT
     if eq >= value_th and can_raise:
         if kind == "station" or spr_now <= 3:

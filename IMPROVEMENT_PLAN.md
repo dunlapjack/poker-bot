@@ -31,7 +31,7 @@
 | 3 | Preflop overhaul: open the button wide (~85–90%), BB defends ~70–80%, 3-bet the top ~15–18% by equity vs the opponent's range, 4-bet = all-in at >= ~55% vs the 3-bet range, preflop tables vs top 50/25/12% ranges | **done (v3)**: play 95% of buttons (raise top 22%, complete to pe 0.40), iso-raise limps at pe 0.52, 3-bet at eq 0.60 vs range, 4-bet+ = commit rule. Pool +0.86 vs v2. Widening the *raise* range hurt vs aggressive bots; widening the *limp* range was the win |
 | 4 | Archetype classifier with bounded counters (maniac / station / check-folder / random), Beta priors, scaled by min(1, n/100), revert if the last 200 hands are below -0.5 bb/hand | **done (v4)**: folder (fold-to-bet >= 62%) -> bet/raise every hand; station (<= 22% and passive) -> thinner value, wider raises; conf = min(1, n/40); auto-off if last 150-200 hands < -0.5 bb. Pool +0.20 vs v3, never worse. Includes the **fold-tracking bug fix** (see below) |
 | 5 | Sizing policy: pot when SPR <= 3, for value and vs stations; half-pot c-bets vs folders and on dry boards | **done (v5)** with GTO bluff threshold: bluff when fold-to-bet > 38% (half-pot break-even is 33%). Self-play +0.19 vs v4 |
-| 6 | Range narrowing by action type, calibrated from showdowns (pot bet = top ~35% + observed bluff share) | |
+| 6 | Range narrowing by action type, calibrated from showdowns (pot bet = top ~35% + observed bluff share) | tested in v6 work: showdown calibration hurt (-0.38); kept v5 range model |
 | 7 | Nut / redraw / blocker features (nut flush, top set, discount non-nut flushes) | |
 | 8 | Variance filter: take the lower-variance option in near-0-EV all-in spots vs unexploited opponents | |
 | 9 | Bucketed preflop CFR (GTO-style) table, only if time remains and it beats #3 | |
@@ -55,3 +55,25 @@ Time: 1.7-2.7 s per 1000-hand half on Jack's PC; real judge match vs always_pot 
 **GTO notes applied:** stack-off threshold = SPR/(1+2·SPR); at SPR <= 4 play shove-or-fold; bluff break-even alpha = B/(P+B) (33% half pot, 50% pot), MDF = P/(P+B); exploit measured tendencies first, GTO frequencies only as the default vs unknown opponents.
 
 **Next ideas:** #6 (range narrowing by action, calibrated from showdowns), #7 (nut/blocker features), maniac counter (call down wider vs always_pot/lag; still the noisiest matchup), #8 variance filter. Tuning was done on seeds 1-2; always confirm on fresh seeds.
+
+## Session 3 results (Nov 7, evening): v6 promoted to root
+**Maniac counter: tested, rejected (v5 is already at the optimum).** Against always_pot / always_half / lag / aggro_reg / a new `students/maniac.py`:
+- Calling down wider (range loosened from showdown calibration): pool -0.38, worse vs all 4 maniacs (-0.7 to -1.3).
+- Tightening further (x0.85 / x0.70 per raise): -0.43 / -2.03.
+- Commit at any SPR vs maniacs (margin 0 / +3): -0.72 / -0.34.
+Conclusion: the noise vs maniacs is variance from all-in pots (v5 already wins +8 to +13 bb/deal there), not a leak. Idea #6 in its "showdown calibration" form was tested this way and also hurt: preflop percentile at showdown misreads postflop made-hand raises.
+
+**More Monte Carlo samples (900 vs 450): rejected.** Pool -0.02, thinking time almost doubled.
+
+**Postflop threshold sweep (never tuned since v1) -> v6:**
+| Variant | Pool diff vs v5 |
+|---|---|
+| raise_th 0.66 / 0.74 | +0.04 / -0.06 |
+| value bets thinner (0.62/0.56) | +0.14 |
+| value bets thicker (0.70/0.64) | -0.20 (worse vs stations) |
+| pot-bet gap 0.04 | -0.01 |
+| no postflop implied-odds discount | +0.17 |
+| **thinner 0.60/0.53 + no implied odds (v6)** | **+0.29 (seeds 1-2), +0.35 ± 0.13 fresh seeds 11-13**, nothing worse |
+Head-to-head: v6 vs v5 -0.02 ± 0.12 (even), v6 vs v1 +0.21 ± 0.14, self-play 0.00. Judge match vs calling station: 0 errors, 2.0-4.1 s of 8 s.
+
+**Remaining ideas, by expected value:** #7 nut/blocker features (mostly captured by MC equity vs a strength-weighted range; low), #8 variance filter (helps win probability only, not EV; low), #9 preflop CFR (skip: no time to beat the tuned #3).
