@@ -19,10 +19,18 @@ from game import AgentConfig, Game, make_deal  # noqa: E402
 
 
 def load_bot(path, tag):
-    spec = importlib.util.spec_from_file_location(f"bot_{tag}", os.path.join(ROOT, path))
-    mod = importlib.util.module_from_spec(spec)
-    sys.path.insert(0, os.path.dirname(os.path.join(ROOT, path)))
-    spec.loader.exec_module(mod)
+    """Load a bot file with its OWN strategy module (each bot dir may have a different one)."""
+    full = os.path.join(ROOT, path)
+    bot_dir = os.path.dirname(full)
+    for name in ("strategy", "strategy_plain"):
+        sys.modules.pop(name, None)          # force a fresh import from this bot's folder
+    sys.path.insert(0, bot_dir)
+    try:
+        spec = importlib.util.spec_from_file_location(f"bot_{tag}_{abs(hash(full))}", full)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+    finally:
+        sys.path.remove(bot_dir)
     return mod
 
 
