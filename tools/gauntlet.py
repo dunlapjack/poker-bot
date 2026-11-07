@@ -12,6 +12,7 @@ import argparse
 import itertools
 import math
 import os
+import random
 import sys
 import time
 
@@ -66,6 +67,15 @@ def play_half(bots, seed, deals, cfg):
         while not g.is_terminal:
             s = g.to_act
             obs = g.observation(s)
+            # common random numbers: same state -> same random stream, so A/B
+            # differences come from decisions, not from Monte Carlo / bluff dice
+            k = len(obs.action_history)
+            r = mems[s].get("rng")
+            if isinstance(r, np.random.Generator):
+                mems[s]["rng"] = np.random.default_rng([seed, i, s, k])
+            elif isinstance(r, random.Random):
+                r.seed(seed * 1_000_003 + i * 101 + s * 17 + k)
+            random.seed(seed * 1_000_003 + i * 101 + s * 17 + k)
             t = time.perf_counter()
             try:
                 a = bots[s].choose_action(obs, mems[s])

@@ -33,6 +33,17 @@ TI = np.array(list(combinations(range(5), 3)))
 ALL = np.arange(36)
 
 TIME_BANK = 8.0
+COMMIT_MARGIN = float(os.environ.get("V2_MARGIN", "0.03"))   # idea #2: stack-off margin
+PF_OPEN_RAISE = float(os.environ.get("PF_OPEN_RAISE", "0.555"))
+PF_OPEN_LIMP = float(os.environ.get("PF_OPEN_LIMP", "0.40"))
+PF_ISO = float(os.environ.get("PF_ISO", "0.52"))
+PF_3BET = float(os.environ.get("PF_3BET", "0.60"))
+PF_COMMIT_MARGIN = float(os.environ.get("PF_CM", "0.03"))
+PF_IMPLIED = float(os.environ.get("PF_IMPLIED", "0.04"))
+ARCH_N = float(os.environ.get("ARCH_N", "40"))
+ARCH_FOLD = float(os.environ.get("ARCH_FOLD", "0.62"))
+ARCH_STATION = float(os.environ.get("ARCH_STATION", "0.22"))
+COMMIT_SPR = float(os.environ.get("V2_CSPR", "3.0"))          # use the engine at SPR <= this
 HANDS_PER_HALF = 1000
 
 # ------------------------------------------------------------------ evaluation
@@ -100,6 +111,7 @@ def new_model() -> dict:
         "faced_bet": 0, "folded_to_bet": 0,       # opp response to OUR raises
         "showdowns": 0,
         "hand": -1, "seen": 0, "pending": False, "my_last_raise": False,
+        "nets": [], "exploit_off": False,
     }
 
 
@@ -148,6 +160,12 @@ def on_hand_end(result, m) -> None:
         m["pending"] = False
     if result.went_to_showdown:
         m["showdowns"] += 1
+    # safety: if the exploits are losing over the last 200 hands, switch them off
+    m["nets"].append(result.my_net)
+    if len(m["nets"]) > 200:
+        m["nets"].pop(0)
+    if len(m["nets"]) >= 150 and archetype(m)[0] != "none" and sum(m["nets"]) / len(m["nets"]) < -1.0:
+        m["exploit_off"] = True
 
 
 def range_tightness(obs, m) -> float:
@@ -165,6 +183,20 @@ def range_tightness(obs, m) -> float:
             keep *= 0.85
     keep = max(keep, 0.08)
     return 1.0 - keep
+
+
+def archetype(m):
+    """Idea #4: bounded counter-strategies. Returns (kind, confidence 0..1)."""
+    if m.get("exploit_off"):
+        return "none", 0.0
+    n = m["faced_bet"]
+    f = opp_fold_to_bet(m)
+    conf = min(1.0, n / ARCH_N)
+    if n >= 12 and f >= ARCH_FOLD:
+        return "folder", conf
+    if n >= 12 and f <= ARCH_STATION and opp_aggr(m) < 0.4:   # passive non-folder (not a maniac)
+        return "station", conf
+    return "none", 0.0
 
 
 # ------------------------------------------------------------------ time governor
@@ -193,6 +225,14 @@ def _pick(obs, *prefs):
 
 
 def decide(obs, mem) -> Action:
+    a = _decide(obs, mem)
+    # remember our own bet/raise so a fold that ends the hand is counted in on_hand_end
+    # (bug fix: our final raise is never in action_history before the hand ends)
+    mem["model"]["pending"] = a in (Action.RAISE_HALF, Action.RAISE_POT)
+    return a
+
+
+def _decide(obs, mem) -> Action:
     m = mem["model"]
     _ingest_history(obs, m)
     rng = mem["rng"]
@@ -206,31 +246,38 @@ def decide(obs, mem) -> Action:
     tight = range_tightness(obs, m)
     n = n_samples(obs, mem)
 
-    # ---------------- preflop
+    # ---------------- preflop (idea #3)
     if obs.street == Street.PREFLOP:
         pe = preflop_eq(obs.hole_cards)
-        if call > 0 and obs.action_history and n:
-            eq = equity(obs.hole_cards, (), min(n, 300), tight, rng) if tight > 0.05 else pe
-        else:
-            eq = pe
+        eff = min(obs.my_stack, obs.opp_stack + call)
+        need_ai = eff / max(pot + 2 * eff - call, 1)
         first_in = not obs.action_history and obs.is_button   # button opening
+        kind, conf = archetype(m)
+        open_raise = PF_OPEN_RAISE - (0.025 if kind == "station" else 0.0)
         if first_in:
-            if pe >= 0.555:
+            if kind == "folder" and rng.random() < conf:
                 return _pick(obs, Action.RAISE_POT, Action.CHECK_CALL)
-            if pe >= 0.47:
-                return Action.CHECK_CALL                      # limp
+            if pe >= open_raise:
+                return _pick(obs, Action.RAISE_POT, Action.CHECK_CALL)
+            if pe >= PF_OPEN_LIMP:
+                return Action.CHECK_CALL                      # complete
             return _pick(obs, Action.FOLD, Action.CHECK_CALL)
         if call == 0:                                         # BB option after limp
-            if pe >= 0.57 and can_raise:
+            if can_raise and kind == "folder" and rng.random() < conf:
+                return Action.RAISE_POT
+            if pe >= PF_ISO and can_raise:
                 return Action.RAISE_POT
             return Action.CHECK_CALL
-        # facing a raise
-        if eq >= 0.60 and can_raise and obs.raises_this_street < 3:
-            return Action.RAISE_POT
-        if eq >= 0.66 and can_raise:
-            return Action.RAISE_POT
-        need = pot_odds - (0.05 if spr_after > 1.5 else 0.0)  # implied odds when deep
-        if eq >= need + 0.02 or spr_after < 0.4 and eq > pot_odds - 0.03:
+        # facing a raise: equity vs the raiser's range
+        eq = equity(obs.hole_cards, (), min(n, 300), tight, rng) if (n and tight > 0.05) else pe
+        r = obs.raises_this_street
+        if can_raise:
+            if r >= 2 and eq >= need_ai + PF_COMMIT_MARGIN:
+                return Action.RAISE_POT                       # 4-bet+ = get it in
+            if r == 1 and eq >= PF_3BET:
+                return Action.RAISE_POT                       # 3-bet for value
+        need = pot_odds - (PF_IMPLIED if spr_after > 1.5 else 0.0)
+        if eq >= need or eq >= need_ai:
             return Action.CHECK_CALL
         return _pick(obs, Action.FOLD, Action.CHECK_CALL)
 
@@ -252,6 +299,20 @@ def decide(obs, mem) -> Action:
     eqr = eq * real
     fold_rate = opp_fold_to_bet(m)
 
+    # ---- SPR commitment engine (idea #2)
+    eff = min(obs.my_stack, obs.opp_stack + call)            # chips that can still go in
+    need_ai = eff / max(pot + 2 * eff - call, 1)             # equity to stack off right now
+    spr_now = eff / max(pot, 1)
+    committed = eq >= need_ai + COMMIT_MARGIN and spr_now <= COMMIT_SPR
+    i_bet_street = any(a.is_me and a.street == obs.street and a.action in (Action.RAISE_HALF, Action.RAISE_POT)
+                       for a in obs.action_history)
+    if call > 0:
+        if committed:
+            return _pick(obs, Action.RAISE_POT, Action.CHECK_CALL)   # get it in
+        if i_bet_street and spr_after <= 1.5 and eq >= pot_odds:
+            return Action.CHECK_CALL                                  # never bet-fold shallow
+    elif committed and can_raise:
+        return Action.RAISE_POT                                       # build the pot to commit
     if call > 0:
         raise_th = 0.70 + 0.05 * obs.raises_this_street
         if eq >= raise_th and can_raise:
@@ -264,14 +325,22 @@ def decide(obs, mem) -> Action:
         return _pick(obs, Action.FOLD, Action.CHECK_CALL)
 
     # no bet to us: value bet / bluff / check
+    kind, conf = archetype(m)
     value_th = 0.66 if fold_rate > 0.35 else 0.60                # vs stations bet thinner
+    if kind == "station":
+        value_th -= 0.03 * conf
+    if kind == "folder" and can_raise and eq < value_th and rng.random() < conf:
+        return Action.RAISE_HALF                                  # cheapest bet that wins the pot
     if eq >= value_th + 0.08 and can_raise:
         return Action.RAISE_POT
     if eq >= value_th and can_raise:
+        if kind == "station" or spr_now <= 3:
+            return Action.RAISE_POT                               # idea #5: big value sizing
         return Action.RAISE_HALF
     # bluff: profitable if opp folds more than the bet's break-even (half pot -> 33%)
-    if can_raise and fold_rate > 0.42 and eq < 0.35:
-        bluff_p = min((fold_rate - 0.38) * 1.5, 0.45) * (1.0 if obs.is_button else 0.6)
+    # half-pot bluff breaks even at 33% folds (GTO alpha = B/(P+B)); bluff above that
+    if can_raise and fold_rate > 0.38 and eq < 0.35:
+        bluff_p = min((fold_rate - 0.33) * 1.5, 0.5) * (1.0 if obs.is_button else 0.6)
         if not river:
             bluff_p *= 1.2                                        # semi-bluffs have equity
         if rng.random() < bluff_p:
