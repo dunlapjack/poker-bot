@@ -40,3 +40,11 @@ Tuning seeds: pool 1001-1008 / H2H 2001-2015. Fresh confirm seeds: 9001-9008 / 9
 - **Conservative alternative: `sparring/v16`** = EV_RB 1.00. H2H +0.26 / +0.42, pool +0.034 / +0.023; set 1 clean, set 2 ctx_size -0.062 ± 0.054; pooled -0.017 ± 0.037.
 - Everything else was neutral, H2H-only, or worse. Nothing committed, pushed or promoted; root agent.py/strategy.py untouched.
 - Housekeeping: `Datathon F26/_stage/` holds the transfer tarballs (safe to delete); an empty `poker-bot/logs/` folder was left by the first sync (deletion is off for me).
+
+## Session 9 (Nov 8 morning): after promoting v17. Bar = v17 (cached as v14::EV_RB=1.10 on 1001-8 / 9201-8)
+| # | Idea | Folder | Seeds | H2H vs v17 | Pool vs v17 | WORSE | Verdict |
+|---|---|---|---|---|---|---|---|
+| T01 | EV_RB 1.20 | `sparring/v18` | 1001-8 / 2001-15 | +0.251 ± 0.113 | +0.025 ± 0.017 | nit -0.066 ± 0.063 | to fresh seeds |
+| T02 | guard: no EV half-pot bets once opp folds <= 5% of >= 8 postflop half-pot bets | `sparring/v19` (v17 + EV_HGUARD) | 1001-8 / 2001-15 | 0.000 | -0.002 ± 0.004 | none | no effect (guard almost never fires; ctx_size's losses aren't EV half-pot bets). Rejected |
+| T03 | v18 fresh set 1 | v18 | 9001-8 / 9101-15 | +0.404 ± 0.117 | +0.010 ± 0.017 | none | |
+| T04 | v18 fresh set 2 | v18 | 9201-8 / 9301-15 | +0.261 ± 0.119 | +0.013 ± 0.016 | none (ctx_size +0.13 better) | both sets pooled: pool +0.011 ± 0.012 (not significant), potodds -0.066 ± 0.068, tag -0.037 ± 0.064. **Marginal: not promoted.** EV_RB has plateaued around 1.1-1.2; the extra gain is mostly H2H vs v17 itself |
