@@ -55,6 +55,18 @@ BLUFF_CAP = float(os.environ.get("BLUFF_CAP", "0.7"))
 BLUFF_EQ = float(os.environ.get("BLUFF_EQ", "0.35"))
 BLUFF_OOP = float(os.environ.get("BLUFF_OOP", "0.6"))
 COMMIT_SPR = float(os.environ.get("V2_CSPR", "3.0"))          # use the engine at SPR <= this
+CTX_ON = os.environ.get("CTX_ON", "1") == "1"                 # item 2: per-context fold stats drive the
+CTX_K = float(os.environ.get("CTX_K", "3"))                   # folder/station switches (pseudo-obs per level)
+EV_ON = os.environ.get("EV_ON", "1") == "1"                   # item 1: EV decides bluffs / thin bets
+EV_R_IP = float(os.environ.get("EV_R_IP", "1.05"))
+EV_R_OOP = float(os.environ.get("EV_R_OOP", "0.90"))
+EV_MARGIN = float(os.environ.get("EV_MARGIN", "0.02"))        # bet only if EV beats check by this x pot
+EV_WARM = int(os.environ.get("EV_WARM", "50"))               # hands of v7 logic before trusting stats
+EV_RB = float(os.environ.get("EV_RB", "0.90"))                # extra realisation once a bet is called
+EV_RAISE = os.environ.get("EV_RAISE", "1") == "1"             # model the opponent raising our bet
+EV_AGGR = float(os.environ.get("EV_AGGR", "0.45"))            # no EV bets vs aggressive opponents
+EV_STATION = os.environ.get("EV_STATION", "0") == "1"         # allow EV bets vs stations
+N_TOP = int(os.environ.get("N_TOP", "450"))                    # MC samples when time allows
 HANDS_PER_HALF = 1000
 
 # ------------------------------------------------------------------ evaluation
@@ -92,6 +104,12 @@ def _pct_rank(x: np.ndarray) -> np.ndarray:
 
 def equity(hole, board, n: int, tight: float, rng) -> float:
     """Equity vs an opponent range. tight in [0,1): 0 = random hand, 0.8 = roughly top 20%."""
+    res, w, _ = equity_detail(hole, board, n, tight, rng)
+    return float((res * w).sum() / max(w.sum(), 1e-9))
+
+
+def equity_detail(hole, board, n: int, tight: float, rng):
+    """Per-sample (result, range weight, opponent strength) for the item 1 EV chooser."""
     board = tuple(board)
     known = np.array(list(hole) + list(board))
     deck = np.setdiff1d(ALL, known)
@@ -103,14 +121,14 @@ def equity(hole, board, n: int, tight: float, rng) -> float:
     me = score_many(np.broadcast_to(np.array(hole), (n, 5)), fb)
     op = score_many(opp, fb)
     res = (me > op) + 0.5 * (me == op)
-    if tight <= 0.01:
-        return float(res.mean())
     strength = _pct_rank(preflop_eq_many(opp))
     if board:
         strength = 0.35 * strength + 0.65 * _pct_rank(made_many(opp, board) + 0.0)
+    if tight <= 0.01:
+        return res, np.ones(n), strength
     # soft threshold keeps some weak hands (bluffs / draws) in the range
     w = 1.0 / (1.0 + np.exp(-(strength - tight) / 0.08))
-    return float((res * w).sum() / max(w.sum(), 1e-9))
+    return res, w, strength
 
 
 # ------------------------------------------------------------------ opponent model
@@ -123,6 +141,8 @@ def new_model() -> dict:
         "showdowns": 0,
         "hand": -1, "seen": 0, "pending": False, "my_last_raise": False,
         "nets": [], "exploit_off": False,
+        "ctx": {},                                # item 2: (street, size, ip) -> [fold, call, raise]
+        "pend_ctx": None,
     }
 
 
@@ -147,6 +167,7 @@ def _ingest_history(obs, m) -> None:
         a = hist[i]
         if a.is_me:
             m["pending"] = a.action in (Action.RAISE_HALF, Action.RAISE_POT)
+            m["pend_ctx"] = (int(a.street), a.action == Action.RAISE_POT, bool(obs.is_button)) if m["pending"] else None
             continue
         is_raise = a.action in (Action.RAISE_HALF, Action.RAISE_POT)
         m["opp_acts"] += 1
@@ -158,16 +179,49 @@ def _ingest_history(obs, m) -> None:
         if m["pending"]:
             m["faced_bet"] += 1
             m["folded_to_bet"] += a.action == Action.FOLD
+            _ctx_add(m, 0 if a.action == Action.FOLD else (2 if is_raise else 1))
             m["pending"] = False
     m["seen"] = len(hist)
+
+
+def _ctx_add(m, outcome) -> None:
+    c = m.get("pend_ctx")
+    if c is None:
+        return
+    m["ctx"].setdefault(c, [0, 0, 0])[outcome] += 1
+    m["pend_ctx"] = None
+
+
+def ctx_fold(m, street, pot_size=None, ip=None) -> float:
+    """Item 2: opponent's fold rate to our bets, shrunk hierarchically
+    global -> street -> street x size -> street x size x position (CTX_K pseudo-obs per level)."""
+    f = opp_fold_to_bet(m)
+    if not CTX_ON:
+        return f
+    st = int(street)
+    levels = [lambda c: c[0] == st]
+    if pot_size is not None:
+        levels.append(lambda c: c[0] == st and c[1] == pot_size)
+        if ip is not None:
+            levels.append(lambda c: c[0] == st and c[1] == pot_size and c[2] == ip)
+    for sel in levels:
+        fo = n = 0
+        for c, v in m["ctx"].items():
+            if sel(c):
+                fo += v[0]
+                n += v[0] + v[1] + v[2]
+        f = (fo + CTX_K * f) / (n + CTX_K)
+    return f
 
 
 def on_hand_end(result, m) -> None:
     if result.hand_index == m["hand"] and m["pending"]:
         # our last raise got a response we never saw: fold if we won without showdown
         m["faced_bet"] += 1
-        if not result.went_to_showdown and result.my_net > 0:
+        folded = not result.went_to_showdown and result.my_net > 0
+        if folded:
             m["folded_to_bet"] += 1
+        _ctx_add(m, 0 if folded else 1)
         m["pending"] = False
     if result.went_to_showdown:
         m["showdowns"] += 1
@@ -223,7 +277,7 @@ def n_samples(obs, mem) -> int:
         return 120
     if per_hand < 0.003:
         return 250
-    return 450
+    return N_TOP
 
 
 # ------------------------------------------------------------------ decisions
@@ -239,8 +293,85 @@ def decide(obs, mem) -> Action:
     a = _decide(obs, mem)
     # remember our own bet/raise so a fold that ends the hand is counted in on_hand_end
     # (bug fix: our final raise is never in action_history before the hand ends)
-    mem["model"]["pending"] = a in (Action.RAISE_HALF, Action.RAISE_POT)
+    m = mem["model"]
+    m["pending"] = a in (Action.RAISE_HALF, Action.RAISE_POT)
+    m["pend_ctx"] = (int(obs.street), a == Action.RAISE_POT, bool(obs.is_button)) if m["pending"] else None
     return a
+
+
+def _cont_eq(res, w, strength, f):
+    """Equity vs the part of the weighted range that does NOT fold (top 1-f by strength)."""
+    if f <= 0.01:
+        return float((res * w).sum() / max(w.sum(), 1e-9))
+    o = np.argsort(strength, kind="stable")
+    cw = np.cumsum(w[o]) / max(w.sum(), 1e-9)
+    keep = np.zeros(len(res), bool)
+    keep[o[cw > f]] = True
+    if not keep.any():
+        return 1.0
+    return float((res[keep] * w[keep]).sum() / max(w[keep].sum(), 1e-9))
+
+
+def ctx_raise(m, street, pot_size, ip) -> float:
+    """Opponent's raise rate vs our bet, same hierarchical shrinkage as ctx_fold (prior 0.10)."""
+    f = 0.10
+    st = int(street)
+    for sel in (lambda c: c[0] == st, lambda c: c[0] == st and c[1] == pot_size,
+                lambda c: c[0] == st and c[1] == pot_size and c[2] == ip):
+        r = n = 0
+        for c, v in m["ctx"].items():
+            if sel(c):
+                r += v[2]
+                n += v[0] + v[1] + v[2]
+        f = (r + CTX_K * f) / (n + CTX_K)
+    return f
+
+
+def _band_eq(res, w, strength, lo, hi):
+    """Equity vs the slice of the weighted range between cumulative-weight quantiles lo..hi."""
+    o = np.argsort(strength, kind="stable")
+    cw = np.cumsum(w[o]) / max(w.sum(), 1e-9)
+    sel = o[(cw > lo) & (cw <= hi + 1e-9)]
+    if len(sel) == 0:
+        return None
+    return float((res[sel] * w[sel]).sum() / max(w[sel].sum(), 1e-9))
+
+
+def ev_choose(obs, m, res, w, strength, eq, spr, river):
+    """Item 1: one-street EV table for CHECK/CALL, FOLD, RAISE_HALF, RAISE_POT.
+    EV(bet b) = f*Pot + (1-f-r)*[E_cont*R*R_b*(Pot+b+c) - b] + r*max(-b, E_raise*R*R_b*(final pot) - (b+x))
+    f, r = opponent's fold / raise rate to this size here (item 2 stats); E_cont = equity vs the
+    middle of the range that calls, E_raise = vs the top r that raises; c = their call, x = their raise."""
+    pot, call = obs.pot, obs.to_call
+    R = 1.0 if (river or spr <= 1.0) else (EV_R_IP if obs.is_button else EV_R_OOP)
+    R_eq = min(eq * R, 1.0)
+    evs = {Action.CHECK_CALL: R_eq * (pot + call) - call}
+    if call > 0:
+        evs[Action.FOLD] = 0.0
+    for act in (Action.RAISE_HALF, Action.RAISE_POT):
+        if act not in obs.legal_actions:
+            continue
+        to = obs.raise_to.get(act) if isinstance(obs.raise_to, dict) else None
+        if to is None:
+            continue
+        b = to - obs.my_bet                      # chips we add
+        c = max(to - obs.opp_bet, 0)             # chips the opponent must add to call
+        f = ctx_fold(m, obs.street, act == Action.RAISE_POT, bool(obs.is_button))
+        if call > 0:
+            f *= 0.6                             # folds to raises are rarer than folds to bets
+        r = ctx_raise(m, obs.street, act == Action.RAISE_POT, bool(obs.is_button)) if EV_RAISE else 0.0
+        r = min(r, max(1.0 - f - 0.05, 0.0))
+        ec = _band_eq(res, w, strength, f, 1.0 - r)
+        ec = min((ec if ec is not None else eq) * R * EV_RB, 1.0)
+        ev = f * pot + (1 - f - r) * (ec * (pot + b + c) - b)
+        if r > 0:
+            er = _band_eq(res, w, strength, 1.0 - r, 1.0)
+            er = eq if er is None else er
+            er = min(er * R * EV_RB, 1.0)
+            x = pot + b + 2 * c                  # rough size of a pot raise
+            ev += r * max(-b, er * (pot + b + c + 2 * x) - (b + x))
+        evs[act] = ev
+    return evs
 
 
 def _decide(obs, mem) -> Action:
@@ -303,12 +434,14 @@ def _decide(obs, mem) -> Action:
             return _pick(obs, Action.RAISE_POT, Action.CHECK_CALL)
         return Action.CHECK_CALL if call == 0 or cat >= 2 else _pick(obs, Action.FOLD, Action.CHECK_CALL)
 
-    eq = equity(obs.hole_cards, obs.board, n, tight, rng)
+    res_s, w_s, str_s = equity_detail(obs.hole_cards, obs.board, n, tight, rng)
+    eq = float((res_s * w_s).sum() / max(w_s.sum(), 1e-9))
     river = obs.street == Street.RIVER
     # equity realisation: out of position / draws realise less
     real = 1.0 if (river or obs.is_button) else 0.93
     eqr = eq * real
-    fold_rate = opp_fold_to_bet(m)
+    fold_rate = ctx_fold(m, obs.street)                         # street-level (item 2)
+    fold_half = ctx_fold(m, obs.street, False, bool(obs.is_button))   # to OUR half-pot bet here
 
     # ---- SPR commitment engine (idea #2)
     eff = min(obs.my_stack, obs.opp_stack + call)            # chips that can still go in
@@ -324,6 +457,7 @@ def _decide(obs, mem) -> Action:
             return Action.CHECK_CALL                                  # never bet-fold shallow
     elif committed and can_raise:
         return Action.RAISE_POT                                       # build the pot to commit
+    use_ev = EV_ON and obs.hand_index >= EV_WARM and not m.get("exploit_off")
     if call > 0:
         raise_th = RAISE_TH + 0.05 * obs.raises_this_street
         if eq >= raise_th and can_raise:
@@ -337,6 +471,13 @@ def _decide(obs, mem) -> Action:
 
     # no bet to us: value bet / bluff / check
     kind, conf = archetype(m)
+    if CTX_ON:                                               # item 2: context stats drive the switches
+        kind, conf = "none", 0.0
+        if not m.get("exploit_off"):
+            if fold_half >= ARCH_FOLD:
+                kind, conf = "folder", 1.0
+            elif opp_fold_to_bet(m) <= ARCH_STATION and opp_aggr(m) < 0.4 and m["faced_bet"] >= 12:   # v13: global fold rate (v7 style)
+                kind, conf = "station", 1.0
     value_th = VALUE_HI if fold_rate > FOLD_SPLIT else VALUE_LO        # vs stations bet thinner
     if kind == "station":
         value_th -= 0.03 * conf
@@ -348,10 +489,19 @@ def _decide(obs, mem) -> Action:
         if kind == "station" or spr_now <= 3:
             return Action.RAISE_POT                               # idea #5: big value sizing
         return Action.RAISE_HALF
+    if use_ev and can_raise and opp_aggr(m) < EV_AGGR and (EV_STATION or kind != "station"):
+        # item 1: below value-bet strength, bet only when the EV table says it beats checking
+        evt = ev_choose(obs, m, res_s, w_s, str_s, eq, spr_now, river)
+        bets = {a: v for a, v in evt.items() if a in (Action.RAISE_HALF, Action.RAISE_POT)}
+        if bets:
+            a = max(bets, key=bets.get)
+            if bets[a] > evt[Action.CHECK_CALL] + EV_MARGIN * pot:
+                return a                                          # item 1: +EV bluff / thin bet
+        return Action.CHECK_CALL
     # bluff: profitable if opp folds more than the bet's break-even (half pot -> 33%)
     # half-pot bluff breaks even at 33% folds (GTO alpha = B/(P+B)); bluff above that
-    if can_raise and fold_rate > BLUFF_MIN and eq < BLUFF_EQ:
-        bluff_p = min((fold_rate - 0.33) * BLUFF_SLOPE, BLUFF_CAP) * (1.0 if obs.is_button else BLUFF_OOP)
+    if can_raise and fold_half > BLUFF_MIN and eq < BLUFF_EQ:
+        bluff_p = min((fold_half - 0.33) * BLUFF_SLOPE, BLUFF_CAP) * (1.0 if obs.is_button else BLUFF_OOP)
         if not river:
             bluff_p *= 1.2                                        # semi-bluffs have equity
         if rng.random() < bluff_p:
