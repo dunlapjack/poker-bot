@@ -18,7 +18,7 @@ import gauntlet  # noqa: E402
 
 POOL = gauntlet.DEFAULT_OPPS[1:] + [
     "sparring/students/tag.py", "sparring/students/lag.py", "sparring/students/nit.py",
-    "sparring/students/potodds.py", "sparring/students/aggro_reg.py", "sparring/students/maniac.py",
+    "sparring/students/potodds.py", "sparring/students/aggro_reg.py", "sparring/students/maniac.py", "sparring/students/profiler.py",
 ]
 
 

@@ -77,3 +77,35 @@ Conclusion: the noise vs maniacs is variance from all-in pots (v5 already wins +
 Head-to-head: v6 vs v5 -0.02 ± 0.12 (even), v6 vs v1 +0.21 ± 0.14, self-play 0.00. Judge match vs calling station: 0 errors, 2.0-4.1 s of 8 s.
 
 **Remaining ideas, by expected value:** #7 nut/blocker features (mostly captured by MC equity vs a strength-weighted range; low), #8 variance filter (helps win probability only, not EV; low), #9 preflop CFR (skip: no time to beat the tuned #3).
+
+## Session 4 results (Nov 7, night): v7 promoted to root
+Rule this session: only changes that test positive ship; everything else is removed from the code (not just switched off).
+
+**Bluff / fold-to-bet sweep (vs v6, seeds 1-2):**
+| Variant | Head-to-head | Pool | Verdict |
+|---|---|---|---|
+| bluff threshold 0.34 / 0.45 (was 0.38) | +0.04 / **-0.23** | 0.00 / +0.01 | rejected |
+| **bluff slope 3.0, cap 0.7 (was 1.5 / 0.5)** | **+0.50 ± 0.17** | -0.01 | **accepted -> v7** |
+| bluff with eq < 0.45 (was 0.35) | +0.11 | +0.01 | neutral, rejected |
+| OOP bluffs at full rate | +0.13 | +0.01 | neutral, rejected |
+| stations split at fold 0.45 | +0.16 | +0.03 | neutral, rejected |
+| raise-bluffs facing a bet | **-0.55** | -0.09 (worse vs tag, nit) | rejected, code removed |
+| archetype thresholds 0.55 / 0.28 | 0.00 | 0.00 | no effect |
+| combined slope+eq+OOP | +0.50 | -0.03 (small dips vs tag/nit) | slope alone is cleaner |
+v7 validation, fresh seeds 11-13: H2H vs v6 **+0.24 ± 0.12**, pool +0.01, nothing worse. 2,000-deal H2H (seeds 51-52): **vs v6 +0.44 ± 0.15, vs v5 +0.27 ± 0.20, vs v1 +0.53 ± 0.24**, self 0.00.
+
+**Unpredictability / risk-taking: tested, all rejected.** New exploiter `students/profiler.py` profiles us (our fold-to-bet, showdown strength of our bets, preflop raise rate) and counter-adjusts, like a smart student bot would.
+| Mixing (vs v7) | Pool | Note |
+|---|---|---|
+| all knobs low (10%) | -0.24 | worse vs maniac, station, always_half |
+| all knobs high (25%) | -0.64 | worse vs 7 opponents |
+| trap strong hands 15% | -0.15 | H2H -0.22, worse vs station |
+| hero-call near-folds 15% | -0.07 | worse vs tag |
+| raise limp hands 15% | -0.14 | worse vs v6, maniac |
+| baseline bluffs 8% | +0.005 | +0.09 vs v6 but -0.13 vs profiler: neutral |
+| swap bet sizes 15% | -0.04 | |
+Why: the bot is already unpredictable where it matters. Its bluffs are random draws whose rate follows the opponent's measured fold rate, and Monte Carlo noise blurs every threshold. The profiler loses to v7 (+1.2 to +1.4 bb/deal). The larger bluff slope in v7 is the "less predictable" change that actually paid.
+
+**Samples 300 instead of 450: neutral (-0.03 ± 0.09), rejected.** The time governor already protects the 8 s bank (v7 judge match: 3.8-4.0 s, 0 errors).
+
+**#7 / #8 / #9 assessment:** #7 nut/blocker effects are already in the equity by construction (opponent hands are sampled from the deck minus our cards, so blockers count; range weights rank made hands, so better flushes/fulls are weighted up when the opponent raises). #8 is EV-neutral by design, so it can't pass the positive-only rule. #9 (preflop CFR) needs a solver for a 376,992-hand game; not feasible in the time left.

@@ -48,6 +48,12 @@ VALUE_HI = float(os.environ.get("VALUE_HI", "0.60"))
 VALUE_LO = float(os.environ.get("VALUE_LO", "0.53"))
 POT_GAP = float(os.environ.get("POT_GAP", "0.08"))
 IMPLIED_POST = float(os.environ.get("IMPLIED_POST", "0.0"))
+FOLD_SPLIT = float(os.environ.get("FOLD_SPLIT", "0.35"))
+BLUFF_MIN = float(os.environ.get("BLUFF_MIN", "0.38"))
+BLUFF_SLOPE = float(os.environ.get("BLUFF_SLOPE", "3.0"))
+BLUFF_CAP = float(os.environ.get("BLUFF_CAP", "0.7"))
+BLUFF_EQ = float(os.environ.get("BLUFF_EQ", "0.35"))
+BLUFF_OOP = float(os.environ.get("BLUFF_OOP", "0.6"))
 COMMIT_SPR = float(os.environ.get("V2_CSPR", "3.0"))          # use the engine at SPR <= this
 HANDS_PER_HALF = 1000
 
@@ -331,7 +337,7 @@ def _decide(obs, mem) -> Action:
 
     # no bet to us: value bet / bluff / check
     kind, conf = archetype(m)
-    value_th = VALUE_HI if fold_rate > 0.35 else VALUE_LO        # vs stations bet thinner
+    value_th = VALUE_HI if fold_rate > FOLD_SPLIT else VALUE_LO        # vs stations bet thinner
     if kind == "station":
         value_th -= 0.03 * conf
     if kind == "folder" and can_raise and eq < value_th and rng.random() < conf:
@@ -344,8 +350,8 @@ def _decide(obs, mem) -> Action:
         return Action.RAISE_HALF
     # bluff: profitable if opp folds more than the bet's break-even (half pot -> 33%)
     # half-pot bluff breaks even at 33% folds (GTO alpha = B/(P+B)); bluff above that
-    if can_raise and fold_rate > 0.38 and eq < 0.35:
-        bluff_p = min((fold_rate - 0.33) * 1.5, 0.5) * (1.0 if obs.is_button else 0.6)
+    if can_raise and fold_rate > BLUFF_MIN and eq < BLUFF_EQ:
+        bluff_p = min((fold_rate - 0.33) * BLUFF_SLOPE, BLUFF_CAP) * (1.0 if obs.is_button else BLUFF_OOP)
         if not river:
             bluff_p *= 1.2                                        # semi-bluffs have equity
         if rng.random() < bluff_p:
