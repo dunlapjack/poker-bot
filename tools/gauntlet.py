@@ -38,7 +38,7 @@ DEFAULT_OPPS = [
 _rng = np.random.default_rng(12345)
 
 
-def allin_equity(h0, h1, known_board):
+def allin_equity(h0, h1, known_board, rng=None):
     """Seat-0 equity with both hands known: exact for flop/turn, MC preflop."""
     known = list(h0) + list(h1) + list(known_board)
     deck = np.setdiff1d(np.arange(36), known)
@@ -46,7 +46,7 @@ def allin_equity(h0, h1, known_board):
     if need <= 2:
         runs = np.array(list(itertools.combinations(deck, need))) if need else np.zeros((1, 0), int)
     else:
-        runs = deck[_rng.random((4000, len(deck))).argsort(1)[:, :need]]
+        runs = deck[(rng or _rng).random((4000, len(deck))).argsort(1)[:, :need]]
     n = len(runs)
     kb = np.broadcast_to(np.array(known_board, dtype=np.int64), (n, len(known_board)))
     boards = np.concatenate([kb, runs], 1)
@@ -95,16 +95,36 @@ def play_half(bots, seed, deals, cfg):
         raw.append(res.nets[0])
         if res.went_to_showdown and street_at_last != Street.RIVER and 0 in g.stacks:
             kb = deal.board[:BOARD_CARDS_VISIBLE[street_at_last]]
-            eq = allin_equity(deal.hole_cards[0], deal.hole_cards[1], kb)
+            eq = allin_equity(deal.hole_cards[0], deal.hole_cards[1], kb,
+                              np.random.default_rng([seed, i, 99]))   # same deal -> same payout
             aiev.append((eq - 0.5) * res.pot)       # equal stacks -> equal contributions
         else:
             aiev.append(res.nets[0])
     return raw, aiev, times, errors
 
 
+def load_spec(spec, tag):
+    """'path' or 'path::KEY=VAL,KEY2=VAL': env knobs are set only while this bot's
+    strategy module is imported (knobs are read at import time)."""
+    path, _, env = spec.partition("::")
+    kv = dict(x.split("=", 1) for x in env.split(",") if x) if env else {}
+    old = {k: os.environ.get(k) for k in kv}
+    os.environ.update(kv)
+    try:
+        return load_bot(path, tag)
+    finally:
+        for k, v in old.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
 def match(cand, opp, deals, seed):
-    a, b = load_bot(cand, f"a{seed}"), load_bot(opp, f"b{seed}")
-    cfg = AgentConfig(num_hands=deals)
+    a, b = load_spec(cand, f"a{seed}"), load_spec(opp, f"b{seed}")
+    # container is ~2.5x slower than the real hardware: scale the bank so the time
+    # governor behaves as it would in the tournament (set BANK=8 to test throttling)
+    cfg = AgentConfig(num_hands=deals, time_bank_seconds=float(os.environ.get("BANK", "20")))
     r1, v1, t1, e1 = play_half([a, b], seed, deals, cfg)
     r2, v2, t2, e2 = play_half([b, a], seed, deals, cfg)
     raw = [(x - y) / 2 for x, y in zip(r1, r2)]

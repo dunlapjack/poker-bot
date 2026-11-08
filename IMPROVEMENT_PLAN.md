@@ -34,7 +34,7 @@
 | 6 | Range narrowing by action type, calibrated from showdowns (pot bet = top ~35% + observed bluff share) | tested in v6 work: showdown calibration hurt (-0.38); kept v5 range model |
 | 7 | Nut / redraw / blocker features (nut flush, top set, discount non-nut flushes) | |
 | 8 | Variance filter: take the lower-variance option in near-0-EV all-in spots vs unexploited opponents | |
-| 9 | Bucketed preflop CFR (GTO-style) table, only if time remains and it beats #3 | |
+| 9 | Bucketed preflop CFR (GTO-style) table, only if time remains and it beats #3 | **tested, rejected (Session 5)**: every variant lost to v7 |
 
 ## Key numbers
 - SPR after a pot open = 6.2; 3-bet pot = 1.7; 4-bet pot = 0.24. Equity needed to stack off = SPR/(1+2·SPR): 46% / 39% / 16%.
@@ -109,3 +109,49 @@ Why: the bot is already unpredictable where it matters. Its bluffs are random dr
 **Samples 300 instead of 450: neutral (-0.03 ± 0.09), rejected.** The time governor already protects the 8 s bank (v7 judge match: 3.8-4.0 s, 0 errors).
 
 **#7 / #8 / #9 assessment:** #7 nut/blocker effects are already in the equity by construction (opponent hands are sampled from the deck minus our cards, so blockers count; range weights rank made hands, so better flushes/fulls are weighted up when the opponent raises). #8 is EV-neutral by design, so it can't pass the positive-only rule. #9 (preflop CFR) needs a solver for a 376,992-hand game; not feasible in the time left.
+
+
+**Sample-count sweep (Session 4b, vs v7 at 450, fresh seeds 71-76, 2,400 deals per opponent):** 200: pool -0.14 ± 0.08 (worse vs lag, nit, aggro_reg) | 300: -0.04 ± 0.06 | 600: -0.04 ± 0.05 (worse vs plain) | 900: -0.05 ± 0.06 (worse vs aggro_reg). **450 stays.** None improved, so nothing changes.
+**v7 vs baselines (3,000 deals each, seeds 81-83):** random +9.8, always_pot +8.1, always_half +12.9, calling_station +12.5, check-folder +1.49 (max ~1.5). 0 errors.
+
+## Session 5 results (Nov 7, late): #9 preflop CFR tested, rejected (v7 stays)
+`tools/build_cfr.py` (kept as a tool; no bot code changed): 40 PRE-percentile buckets, joint bucket frequency + showdown equity from 600k MC deals, preflop tree generated from `game.Game` (exact pot-limit sizes, 4-raise cap), vectorised CFR+ with linear averaging. Solves in ~5 s, exploitability < 0.001 chips/hand **inside the abstraction**. Flop-seen terminals pay pot x clip(E x real) to the button.
+The solution depends heavily on `real`: button raises the top ~12% / ~25% / ~60% / ~70% at 0.95 / 1.00 / 1.05 / 1.10.
+| Variant (vs v7, seeds 1-2, 400 deals) | H2H | Pool | WORSE vs |
+|---|---|---|---|
+| all, real 0.95 | -0.51 ± 0.27 | -0.39 ± 0.17 | always_pot, always_half, station, check-folder, tag |
+| all, real 1.00 | -0.53 ± 0.31 | -0.40 ± 0.18 | always_half, check-folder, tag |
+| hybrid (CFR only vs no archetype), 1.00 | -0.53 | -0.36 ± 0.17 | always_half, tag |
+| all / hybrid, 1.05 | -0.54 | -0.42 / -0.50 | always_pot, always_half, tag, aggro_reg |
+| all / hybrid, 1.10 | -0.67 | -0.75 / -0.89 | 5-6 opponents |
+| button opening only, 1.00 | -0.16 ± 0.23 | -0.26 ± 0.13 | plain, always_half, station, check-folder, profiler |
+Why: the abstraction treats postflop as "equity x pot", but our postflop play (range model, exploits, commitment engine) realises equity very differently by pot size and opponent type, and the opponents aren't GTO. The hand-tuned #3 thresholds were tuned against exactly that. No variant came close to 0, so no fresh-seed run.
+
+**Thinking time:** a real match vs Minsky used 1.6 s of 8 s. More samples were already tested and don't add EV (Session 4b: 600 / 900 samples = -0.04 / -0.05 pool), so the spare time isn't a lever on its own.
+
+## Session 6 results (Nov 7-8, night): research items 0-4. v12 = candidate, NOT promoted yet
+Full results tables: `sparring/SESSION6_RESULTS.txt`. Units everywhere are **chips per deal** (1 bb = 2 chips; earlier sessions' "bb" numbers were chips too).
+**Discord (Rishab, 9:22 PM):** in the real tournament the unit of execution is ONE half, and mirrored halves are paired. Nothing carries over between halves.
+
+**Item 0, harness (done):** `tools/runpool.py run|report NEW OLD [--pool 1001-1008] [--h2h 2001-2015]` caches every match in `results/` (gitignored, keyed by a hash of the bot's files + knobs), uses real 1000-deal halves, an 18-bot panel (13 old + ctx_flop + ctx_size + v1/v5/v6) x 8 seeds, and 15,000 H2H deals. Bot specs can carry knobs: `path::K=V,K=V`. Fixes: (1) the all-in equity MC used a process-global RNG -> now seeded per deal (identical bots score exactly 0 again); (2) the container is ~2.5x slower than Jack's PC, so v7 sat near its time budget and concurrent jobs pushed the governor into low-sample/emergency play (one run was corrupted) -> the harness gives bots a **20 s bank** (`BANK` env; ~8 s on the PC); (3) Pool workers recycle (memory leak from re-loading bots). Control variate skipped: duplicate seats + CRN already cancel card luck, and paired diffs come from decision changes. Full-power candidate = ~12-14 min with the baseline cached.
+**Item 2, per-context fold stats (ACCEPTED):** fold/call/raise counts keyed by (street, half|pot, position), hierarchical Beta shrinkage global -> street -> size -> position (k=3). "replace" = the folder/station switches use the context stats (folder if fold-to-our-half-pot-bet here >= 0.62). vs v7: alongside H2H +0.35 ± 0.07, pool +0.07 ± 0.01; **replace H2H +0.81 ± 0.07, pool +0.16 ± 0.02**. Main source: v-family bots fold ~90% to river half-pot bets.
+**Item 3, frequency-matched narrowing (REJECTED):** keep = observed bet freq per (street, facing), showdown fallback. H2H +0.16 but pool -0.13 ± 0.03, WORSE vs 9; loosened (x1.4, floor 0.25): pool -0.09, WORSE vs 5. EHS potential not built (needs several runouts per sampled hand).
+**Item 1, one-street EV chooser (ACCEPTED in "bluff" mode):** EV(bet) = f*Pot + (1-f-r)*[E_call*R*0.9*(Pot+b+c) - b] + r*max(-b, E_raise*R*0.9*(final pot) - (b+x)), with f, r from the item 2 stats, E_call / E_raise = equity vs range bands. Used only below value-bet strength (the EV table decides bluffs and thin bets; v7 keeps value bets and their sizing), after hand 50. vs v8-replace: H2H +1.01 ± 0.13, pool +0.14 ± 0.02. Rejected modes: full (over-bets; loses to stations), size-only (neutral), no raise branch (pot-bets 2.5x as often as v7).
+**Item 4, Exp3 (REJECTED):** arms = base / RAISE_TH 0.66 / FOLD_SPLIT 0.45, eta 0.025, floor 4%, learned within a half: H2H +0.03 ± 0.08, pool +0.01 ± 0.02. A bandit can't beat the base without an arm that is better for some opponents.
+**Re-tests at full power on top of items 1+2:** RAISE_TH 0.66 (H2H +0.05 ± 0.07, pool +0.008 ± 0.012, neutral), FOLD_SPLIT 0.45 (pool +0.014 ± 0.013 but WORSE vs ctx_flop). Screening-rejected (WORSE vs >= 1): POT_GAP 0.04, N_TOP 300, N_TOP 600. BLUFF_EQ / BLUFF_OOP / baseline bluffs are superseded by the EV bluff rule (they only act in the first 50 hands now).
+
+**Fresh-seed confirmation (the decision):**
+| Version | Seeds | H2H vs v7 | Pool vs v7 | WORSE |
+|---|---|---|---|---|
+| v11 = items 2+1 | 3001-8 / 4001-15 | **+1.48 ± 0.14** | **+0.31 ± 0.03** | plain -0.08, lag -0.12, maniac -0.10 |
+| **v12** = v11 + no EV bets vs aggressive (aggr >= 0.45) or station opponents | 5001-8 / 6001-15 (new) | **+1.54 ± 0.14** | **+0.30 ± 0.03** | **plain -0.11 ± 0.06**, potodds -0.06 ± 0.06 |
+Item 2 alone on fresh seeds: plain -0.03, lag -0.05, maniac -0.03 (not flagged). v12 vs v11 head-to-head: -0.14 ± 0.07 (v11 counts as "aggressive" so v12 turns off EV vs it); same pool.
+vs v1 / v5 / v6 on fresh seeds: +1.07 / +1.73 / +1.29. Better vs tag, profiler, both ctx bots, checkfold.
+**v12 on Jack's PC:** judge match vs always_pot: 1.28-1.41 s of 8 s, 0 errors; 18 tests pass.
+
+## HANDOFF for the next session (start here)
+**State:** root `agent.py`/`strategy.py` are still **v7** (commit ad62dde). `sparring/v12` is the candidate. Do NOT resubmit until Jack says the bot is final.
+**Jack's decision needed:** promote v12? It's +1.5 H2H / +0.30 pool vs v7 on unseen seeds, but strictly fails the rule because of plain_agent (-0.11 ± 0.06, ~2% of our +5/deal edge vs it; consistent on every seed set) and potodds (-0.06, marginal).
+**Next fix to try (v13, ~40 min):** the plain_agent loss comes from item 2 "replace" mode: station detection uses the street-level fold rate instead of the global one (plain folds 7% on the flop but 24% on the river, so on the river it isn't treated as a station). Make the station test use `opp_fold_to_bet(m)` (v7 style) and keep the context stats for the folder test. Run `runpool run sparring/v13/agent.py sparring/v12/agent.py` on 1001-1008 / 2001-2015, then v13 vs v7 on NEW seeds (7001-7008 / 8001-8015). Ship if no WORSE.
+**Promote steps:** copy `sparring/vN/strategy.py` to the root (agent.py root keeps PARTICIPANT), copy tables.npz if needed, `pytest -q tests test_agent.py`, one judge match, commit, push, resubmit with the new SHA (only when Jack says).
+**Testing notes:** run long jobs in the cloud container (stage poker-bot/, `pip install fastapi uvicorn pytest`), never run other CPU jobs alongside a queue, keep `BANK=20` (default). `sparring/v10` holds every Session 6 experiment behind env knobs (CTX_MODE, RN_ON, EV_MODE, EV_RSTRICT, EXP3_ARMS, N_TOP, BASE_BLUFF) for reproducing the tables.
