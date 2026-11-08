@@ -1,0 +1,25 @@
+NEW=sparring/v14/agent.py::CTX_K=5
+OLD=sparring/v13/agent.py
+1000-deal halves, pool seeds 1001..1008, h2h seeds 2001..2015
+HEAD-TO-HEAD new vs old   +0.016 ±0.081   (15/15 seeds, 15000 deals)
+opponent                     new     old     diff      ±  seeds
+plain_agent.py             +5.21   +5.21   +0.004  0.015  8
+baseline_random.py         +8.84   +8.85   -0.007  0.042  8
+baseline_always_pot.py     +8.16   +8.16   +0.000  0.000  8
+baseline_always_half.py   +12.78  +12.78   +0.000  0.000  8
+baseline_calling_statio   +11.65  +11.65   +0.000  0.000  8
+checkfold_agent.py         +1.49   +1.49   +0.000  0.000  8
+tag.py                     +1.28   +1.26   +0.025  0.067  8
+lag.py                     +2.73   +2.71   +0.023  0.036  8
+nit.py                     +0.99   +0.97   +0.017  0.094  8
+potodds.py                 +3.23   +3.24   -0.006  0.021  8
+aggro_reg.py               +2.48   +2.48   +0.001  0.030  8
+maniac.py                  +4.36   +4.35   +0.011  0.023  8
+profiler.py                +2.11   +2.13   -0.014  0.069  8
+ctx_flop.py                +1.42   +1.49   -0.078  0.071  8  WORSE
+ctx_size.py                +0.64   +0.71   -0.066  0.082  8
+agent.py                   +1.80   +1.76   +0.034  0.067  8
+agent.py                   +1.97   +1.90   +0.070  0.081  8
+agent.py                   +1.90   +1.83   +0.068  0.087  8
+POOL AVERAGE diff                          +0.004  0.013
+max time/half (s): new 5.23  old 5.07   errors 0   WORSE: ['ctx_flop.py']

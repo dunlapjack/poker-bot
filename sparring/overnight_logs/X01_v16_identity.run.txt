@@ -1,0 +1,9 @@
+2 jobs to run
+[    12s] 1/2 sparring_v16_agent-5958906d80__sparring_v14_agent-6498d1327c__1000_2001_B20.json
+[    13s] 2/2 sparring_v16_agent-5958906d80__sparring_v14_agent-6498d1327c__1000_2002_B20.json
+NEW=sparring/v16/agent.py
+OLD=sparring/v14/agent.py::EV_RB=1.00
+1000-deal halves, pool seeds 1001..1008, h2h seeds 2001..2002
+HEAD-TO-HEAD new vs old   +0.000 ±0.000   (2/2 seeds, 2000 deals)
+opponent                     new     old     diff      ±  seeds
+max time/half (s): new 0.00  old 0.00   errors 0   WORSE: none

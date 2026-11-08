@@ -1,0 +1,185 @@
+159 jobs to run
+[    12s] 1/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2001_B20.json
+[    13s] 2/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2002_B20.json
+[    23s] 3/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2003_B20.json
+[    26s] 4/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2004_B20.json
+[    35s] 5/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2005_B20.json
+[    38s] 6/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2006_B20.json
+[    48s] 7/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2007_B20.json
+[    50s] 8/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2008_B20.json
+[    59s] 9/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2009_B20.json
+[    62s] 10/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2010_B20.json
+[    72s] 11/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2011_B20.json
+[    73s] 12/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2012_B20.json
+[    84s] 13/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2013_B20.json
+[    86s] 14/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2014_B20.json
+[    96s] 15/159 sparring_v14_agent-d442ebc96b__sparring_v13_agent-2d03f25445__1000_2015_B20.json
+[    98s] 16/159 sparring_v14_agent-d442ebc96b__sparring_plain_agent-d6d5dcf02f__1000_1001_B20.json
+[   103s] 17/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_random-f9f4413075__1000_1001_B20.json
+[   108s] 18/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_pot-29f42ec787__1000_1001_B20.json
+[   115s] 19/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_half-9db17dae18__1000_1001_B20.json
+[   116s] 20/159 sparring_v14_agent-d442ebc96b__sparring_checkfold_agent-bca6989d2a__1000_1001_B20.json
+[   117s] 21/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_calling_station-17c22d72b1__1000_1001_B20.json
+[   123s] 22/159 sparring_v14_agent-d442ebc96b__sparring_students_tag-ee0f0be0d8__1000_1001_B20.json
+[   128s] 23/159 sparring_v14_agent-d442ebc96b__sparring_students_nit-d1a711e437__1000_1001_B20.json
+[   129s] 24/159 sparring_v14_agent-d442ebc96b__sparring_students_lag-b3860e531c__1000_1001_B20.json
+[   138s] 25/159 sparring_v14_agent-d442ebc96b__sparring_students_potodds-9e357bca44__1000_1001_B20.json
+[   139s] 26/159 sparring_v14_agent-d442ebc96b__sparring_students_aggro_reg-3902ffb89b__1000_1001_B20.json
+[   149s] 27/159 sparring_v14_agent-d442ebc96b__sparring_students_profiler-c9079e82a8__1000_1001_B20.json
+[   151s] 28/159 sparring_v14_agent-d442ebc96b__sparring_students_maniac-dd86951d83__1000_1001_B20.json
+[   155s] 29/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_flop-2b73c9a102__1000_1001_B20.json
+[   158s] 30/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_size-dfc313e408__1000_1001_B20.json
+[   167s] 31/159 sparring_v14_agent-d442ebc96b__sparring_v1_agent-575fddb8ca__1000_1001_B20.json
+[   173s] 32/159 sparring_v14_agent-d442ebc96b__sparring_v5_agent-8c06bbc342__1000_1001_B20.json
+[   181s] 33/159 sparring_v14_agent-d442ebc96b__sparring_v6_agent-07fc56ef41__1000_1001_B20.json
+[   184s] 34/159 sparring_v14_agent-d442ebc96b__sparring_plain_agent-d6d5dcf02f__1000_1002_B20.json
+[   189s] 35/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_random-f9f4413075__1000_1002_B20.json
+[   196s] 36/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_pot-29f42ec787__1000_1002_B20.json
+[   201s] 37/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_half-9db17dae18__1000_1002_B20.json
+[   202s] 38/159 sparring_v14_agent-d442ebc96b__sparring_checkfold_agent-bca6989d2a__1000_1002_B20.json
+[   205s] 39/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_calling_station-17c22d72b1__1000_1002_B20.json
+[   210s] 40/159 sparring_v14_agent-d442ebc96b__sparring_students_tag-ee0f0be0d8__1000_1002_B20.json
+[   215s] 41/159 sparring_v14_agent-d442ebc96b__sparring_students_nit-d1a711e437__1000_1002_B20.json
+[   216s] 42/159 sparring_v14_agent-d442ebc96b__sparring_students_lag-b3860e531c__1000_1002_B20.json
+[   226s] 43/159 sparring_v14_agent-d442ebc96b__sparring_students_potodds-9e357bca44__1000_1002_B20.json
+[   227s] 44/159 sparring_v14_agent-d442ebc96b__sparring_students_aggro_reg-3902ffb89b__1000_1002_B20.json
+[   237s] 45/159 sparring_v14_agent-d442ebc96b__sparring_students_profiler-c9079e82a8__1000_1002_B20.json
+[   239s] 46/159 sparring_v14_agent-d442ebc96b__sparring_students_maniac-dd86951d83__1000_1002_B20.json
+[   243s] 47/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_flop-2b73c9a102__1000_1002_B20.json
+[   245s] 48/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_size-dfc313e408__1000_1002_B20.json
+[   256s] 49/159 sparring_v14_agent-d442ebc96b__sparring_v1_agent-575fddb8ca__1000_1002_B20.json
+[   261s] 50/159 sparring_v14_agent-d442ebc96b__sparring_v5_agent-8c06bbc342__1000_1002_B20.json
+[   270s] 51/159 sparring_v14_agent-d442ebc96b__sparring_v6_agent-07fc56ef41__1000_1002_B20.json
+[   273s] 52/159 sparring_v14_agent-d442ebc96b__sparring_plain_agent-d6d5dcf02f__1000_1003_B20.json
+[   278s] 53/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_random-f9f4413075__1000_1003_B20.json
+[   283s] 54/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_pot-29f42ec787__1000_1003_B20.json
+[   291s] 55/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_half-9db17dae18__1000_1003_B20.json
+[   291s] 56/159 sparring_v14_agent-d442ebc96b__sparring_checkfold_agent-bca6989d2a__1000_1003_B20.json
+[   292s] 57/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_calling_station-17c22d72b1__1000_1003_B20.json
+[   299s] 58/159 sparring_v14_agent-d442ebc96b__sparring_students_tag-ee0f0be0d8__1000_1003_B20.json
+[   303s] 59/159 sparring_v14_agent-d442ebc96b__sparring_students_nit-d1a711e437__1000_1003_B20.json
+[   304s] 60/159 sparring_v14_agent-d442ebc96b__sparring_students_lag-b3860e531c__1000_1003_B20.json
+[   313s] 61/159 sparring_v14_agent-d442ebc96b__sparring_students_potodds-9e357bca44__1000_1003_B20.json
+[   314s] 62/159 sparring_v14_agent-d442ebc96b__sparring_students_aggro_reg-3902ffb89b__1000_1003_B20.json
+[   324s] 63/159 sparring_v14_agent-d442ebc96b__sparring_students_profiler-c9079e82a8__1000_1003_B20.json
+[   327s] 64/159 sparring_v14_agent-d442ebc96b__sparring_students_maniac-dd86951d83__1000_1003_B20.json
+[   330s] 65/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_flop-2b73c9a102__1000_1003_B20.json
+[   334s] 66/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_size-dfc313e408__1000_1003_B20.json
+[   342s] 67/159 sparring_v14_agent-d442ebc96b__sparring_v1_agent-575fddb8ca__1000_1003_B20.json
+[   349s] 68/159 sparring_v14_agent-d442ebc96b__sparring_v5_agent-8c06bbc342__1000_1003_B20.json
+[   356s] 69/159 sparring_v14_agent-d442ebc96b__sparring_v6_agent-07fc56ef41__1000_1003_B20.json
+[   360s] 70/159 sparring_v14_agent-d442ebc96b__sparring_plain_agent-d6d5dcf02f__1000_1004_B20.json
+[   364s] 71/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_random-f9f4413075__1000_1004_B20.json
+[   371s] 72/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_pot-29f42ec787__1000_1004_B20.json
+[   375s] 73/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_half-9db17dae18__1000_1004_B20.json
+[   376s] 74/159 sparring_v14_agent-d442ebc96b__sparring_checkfold_agent-bca6989d2a__1000_1004_B20.json
+[   380s] 75/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_calling_station-17c22d72b1__1000_1004_B20.json
+[   384s] 76/159 sparring_v14_agent-d442ebc96b__sparring_students_tag-ee0f0be0d8__1000_1004_B20.json
+[   388s] 77/159 sparring_v14_agent-d442ebc96b__sparring_students_nit-d1a711e437__1000_1004_B20.json
+[   392s] 78/159 sparring_v14_agent-d442ebc96b__sparring_students_lag-b3860e531c__1000_1004_B20.json
+[   399s] 79/159 sparring_v14_agent-d442ebc96b__sparring_students_potodds-9e357bca44__1000_1004_B20.json
+[   402s] 80/159 sparring_v14_agent-d442ebc96b__sparring_students_aggro_reg-3902ffb89b__1000_1004_B20.json
+[   412s] 81/159 sparring_v14_agent-d442ebc96b__sparring_students_profiler-c9079e82a8__1000_1004_B20.json
+[   412s] 82/159 sparring_v14_agent-d442ebc96b__sparring_students_maniac-dd86951d83__1000_1004_B20.json
+[   416s] 83/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_flop-2b73c9a102__1000_1004_B20.json
+[   418s] 84/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_size-dfc313e408__1000_1004_B20.json
+[   429s] 85/159 sparring_v14_agent-d442ebc96b__sparring_v1_agent-575fddb8ca__1000_1004_B20.json
+[   434s] 86/159 sparring_v14_agent-d442ebc96b__sparring_v5_agent-8c06bbc342__1000_1004_B20.json
+[   442s] 87/159 sparring_v14_agent-d442ebc96b__sparring_v6_agent-07fc56ef41__1000_1004_B20.json
+[   445s] 88/159 sparring_v14_agent-d442ebc96b__sparring_plain_agent-d6d5dcf02f__1000_1005_B20.json
+[   449s] 89/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_random-f9f4413075__1000_1005_B20.json
+[   455s] 90/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_pot-29f42ec787__1000_1005_B20.json
+[   461s] 91/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_half-9db17dae18__1000_1005_B20.json
+[   461s] 92/159 sparring_v14_agent-d442ebc96b__sparring_checkfold_agent-bca6989d2a__1000_1005_B20.json
+[   465s] 93/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_calling_station-17c22d72b1__1000_1005_B20.json
+[   469s] 94/159 sparring_v14_agent-d442ebc96b__sparring_students_tag-ee0f0be0d8__1000_1005_B20.json
+[   474s] 95/159 sparring_v14_agent-d442ebc96b__sparring_students_nit-d1a711e437__1000_1005_B20.json
+[   476s] 96/159 sparring_v14_agent-d442ebc96b__sparring_students_lag-b3860e531c__1000_1005_B20.json
+[   484s] 97/159 sparring_v14_agent-d442ebc96b__sparring_students_potodds-9e357bca44__1000_1005_B20.json
+[   485s] 98/159 sparring_v14_agent-d442ebc96b__sparring_students_aggro_reg-3902ffb89b__1000_1005_B20.json
+[   495s] 99/159 sparring_v14_agent-d442ebc96b__sparring_students_profiler-c9079e82a8__1000_1005_B20.json
+[   498s] 100/159 sparring_v14_agent-d442ebc96b__sparring_students_maniac-dd86951d83__1000_1005_B20.json
+[   500s] 101/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_flop-2b73c9a102__1000_1005_B20.json
+[   504s] 102/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_size-dfc313e408__1000_1005_B20.json
+[   513s] 103/159 sparring_v14_agent-d442ebc96b__sparring_v1_agent-575fddb8ca__1000_1005_B20.json
+[   519s] 104/159 sparring_v14_agent-d442ebc96b__sparring_v5_agent-8c06bbc342__1000_1005_B20.json
+[   527s] 105/159 sparring_v14_agent-d442ebc96b__sparring_v6_agent-07fc56ef41__1000_1005_B20.json
+[   530s] 106/159 sparring_v14_agent-d442ebc96b__sparring_plain_agent-d6d5dcf02f__1000_1006_B20.json
+[   535s] 107/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_random-f9f4413075__1000_1006_B20.json
+[   541s] 108/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_pot-29f42ec787__1000_1006_B20.json
+[   546s] 109/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_half-9db17dae18__1000_1006_B20.json
+[   547s] 110/159 sparring_v14_agent-d442ebc96b__sparring_checkfold_agent-bca6989d2a__1000_1006_B20.json
+[   549s] 111/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_calling_station-17c22d72b1__1000_1006_B20.json
+[   554s] 112/159 sparring_v14_agent-d442ebc96b__sparring_students_tag-ee0f0be0d8__1000_1006_B20.json
+[   559s] 113/159 sparring_v14_agent-d442ebc96b__sparring_students_nit-d1a711e437__1000_1006_B20.json
+[   560s] 114/159 sparring_v14_agent-d442ebc96b__sparring_students_lag-b3860e531c__1000_1006_B20.json
+[   569s] 115/159 sparring_v14_agent-d442ebc96b__sparring_students_potodds-9e357bca44__1000_1006_B20.json
+[   570s] 116/159 sparring_v14_agent-d442ebc96b__sparring_students_aggro_reg-3902ffb89b__1000_1006_B20.json
+[   580s] 117/159 sparring_v14_agent-d442ebc96b__sparring_students_profiler-c9079e82a8__1000_1006_B20.json
+[   581s] 118/159 sparring_v14_agent-d442ebc96b__sparring_students_maniac-dd86951d83__1000_1006_B20.json
+[   585s] 119/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_flop-2b73c9a102__1000_1006_B20.json
+[   587s] 120/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_size-dfc313e408__1000_1006_B20.json
+[   597s] 121/159 sparring_v14_agent-d442ebc96b__sparring_v1_agent-575fddb8ca__1000_1006_B20.json
+[   602s] 122/159 sparring_v14_agent-d442ebc96b__sparring_v5_agent-8c06bbc342__1000_1006_B20.json
+[   610s] 123/159 sparring_v14_agent-d442ebc96b__sparring_v6_agent-07fc56ef41__1000_1006_B20.json
+[   612s] 124/159 sparring_v14_agent-d442ebc96b__sparring_plain_agent-d6d5dcf02f__1000_1007_B20.json
+[   617s] 125/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_random-f9f4413075__1000_1007_B20.json
+[   621s] 126/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_pot-29f42ec787__1000_1007_B20.json
+[   628s] 127/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_half-9db17dae18__1000_1007_B20.json
+[   629s] 128/159 sparring_v14_agent-d442ebc96b__sparring_checkfold_agent-bca6989d2a__1000_1007_B20.json
+[   630s] 129/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_calling_station-17c22d72b1__1000_1007_B20.json
+[   636s] 130/159 sparring_v14_agent-d442ebc96b__sparring_students_tag-ee0f0be0d8__1000_1007_B20.json
+[   639s] 131/159 sparring_v14_agent-d442ebc96b__sparring_students_nit-d1a711e437__1000_1007_B20.json
+[   641s] 132/159 sparring_v14_agent-d442ebc96b__sparring_students_lag-b3860e531c__1000_1007_B20.json
+[   649s] 133/159 sparring_v14_agent-d442ebc96b__sparring_students_potodds-9e357bca44__1000_1007_B20.json
+[   650s] 134/159 sparring_v14_agent-d442ebc96b__sparring_students_aggro_reg-3902ffb89b__1000_1007_B20.json
+[   659s] 135/159 sparring_v14_agent-d442ebc96b__sparring_students_profiler-c9079e82a8__1000_1007_B20.json
+[   661s] 136/159 sparring_v14_agent-d442ebc96b__sparring_students_maniac-dd86951d83__1000_1007_B20.json
+[   664s] 137/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_flop-2b73c9a102__1000_1007_B20.json
+[   667s] 138/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_size-dfc313e408__1000_1007_B20.json
+[   676s] 139/159 sparring_v14_agent-d442ebc96b__sparring_v1_agent-575fddb8ca__1000_1007_B20.json
+[   681s] 140/159 sparring_v14_agent-d442ebc96b__sparring_v5_agent-8c06bbc342__1000_1007_B20.json
+[   688s] 141/159 sparring_v14_agent-d442ebc96b__sparring_v6_agent-07fc56ef41__1000_1007_B20.json
+[   692s] 142/159 sparring_v14_agent-d442ebc96b__sparring_plain_agent-d6d5dcf02f__1000_1008_B20.json
+[   695s] 143/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_random-f9f4413075__1000_1008_B20.json
+[   702s] 144/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_pot-29f42ec787__1000_1008_B20.json
+[   707s] 145/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_always_half-9db17dae18__1000_1008_B20.json
+[   707s] 146/159 sparring_v14_agent-d442ebc96b__sparring_checkfold_agent-bca6989d2a__1000_1008_B20.json
+[   710s] 147/159 sparring_v14_agent-d442ebc96b__baseline-bots_baseline_calling_station-17c22d72b1__1000_1008_B20.json
+[   715s] 148/159 sparring_v14_agent-d442ebc96b__sparring_students_tag-ee0f0be0d8__1000_1008_B20.json
+[   719s] 149/159 sparring_v14_agent-d442ebc96b__sparring_students_nit-d1a711e437__1000_1008_B20.json
+[   721s] 150/159 sparring_v14_agent-d442ebc96b__sparring_students_lag-b3860e531c__1000_1008_B20.json
+[   728s] 151/159 sparring_v14_agent-d442ebc96b__sparring_students_potodds-9e357bca44__1000_1008_B20.json
+[   731s] 152/159 sparring_v14_agent-d442ebc96b__sparring_students_aggro_reg-3902ffb89b__1000_1008_B20.json
+[   740s] 153/159 sparring_v14_agent-d442ebc96b__sparring_students_profiler-c9079e82a8__1000_1008_B20.json
+[   741s] 154/159 sparring_v14_agent-d442ebc96b__sparring_students_maniac-dd86951d83__1000_1008_B20.json
+[   745s] 155/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_flop-2b73c9a102__1000_1008_B20.json
+[   747s] 156/159 sparring_v14_agent-d442ebc96b__sparring_students_ctx_size-dfc313e408__1000_1008_B20.json
+[   758s] 157/159 sparring_v14_agent-d442ebc96b__sparring_v1_agent-575fddb8ca__1000_1008_B20.json
+[   762s] 158/159 sparring_v14_agent-d442ebc96b__sparring_v5_agent-8c06bbc342__1000_1008_B20.json
+[   771s] 159/159 sparring_v14_agent-d442ebc96b__sparring_v6_agent-07fc56ef41__1000_1008_B20.json
+NEW=sparring/v14/agent.py::EV_MARGIN=0.0
+OLD=sparring/v13/agent.py
+1000-deal halves, pool seeds 1001..1008, h2h seeds 2001..2015
+HEAD-TO-HEAD new vs old   +0.055 ±0.084   (15/15 seeds, 15000 deals)
+opponent                     new     old     diff      ±  seeds
+plain_agent.py             +5.20   +5.21   -0.007  0.012  8
+baseline_random.py         +8.85   +8.85   +0.000  0.000  8
+baseline_always_pot.py     +8.16   +8.16   +0.000  0.000  8
+baseline_always_half.py   +12.78  +12.78   +0.000  0.000  8
+baseline_calling_statio   +11.65  +11.65   +0.000  0.000  8
+checkfold_agent.py         +1.49   +1.49   +0.000  0.000  8
+tag.py                     +1.27   +1.26   +0.012  0.066  8
+lag.py                     +2.71   +2.71   +0.000  0.000  8
+nit.py                     +0.97   +0.97   -0.001  0.073  8
+potodds.py                 +3.24   +3.24   +0.003  0.026  8
+aggro_reg.py               +2.47   +2.48   -0.003  0.008  8
+maniac.py                  +4.35   +4.35   +0.000  0.000  8
+profiler.py                +2.15   +2.13   +0.027  0.050  8
+ctx_flop.py                +1.48   +1.49   -0.009  0.017  8
+ctx_size.py                +0.68   +0.71   -0.026  0.074  8
+agent.py                   +1.84   +1.76   +0.074  0.072  8  better
+agent.py                   +1.98   +1.90   +0.077  0.076  8  better
+agent.py                   +1.86   +1.83   +0.034  0.092  8
+POOL AVERAGE diff                          +0.010  0.011
+max time/half (s): new 5.67  old 5.07   errors 0   WORSE: none

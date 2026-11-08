@@ -1,0 +1,25 @@
+NEW=sparring/v17/agent.py
+OLD=sparring/v13/agent.py
+1000-deal halves, pool seeds 9001..9008, h2h seeds 9101..9115
+HEAD-TO-HEAD new vs old   +0.480 ±0.126   (15/15 seeds, 15000 deals)
+opponent                     new     old     diff      ±  seeds
+plain_agent.py             +5.07   +5.00   +0.073  0.041  8  better
+baseline_random.py         +9.49   +9.49   +0.000  0.000  8
+baseline_always_pot.py     +8.52   +8.52   +0.000  0.000  8
+baseline_always_half.py   +12.71  +12.71   +0.000  0.000  8
+baseline_calling_statio   +11.93  +11.93   +0.000  0.000  8
+checkfold_agent.py         +1.49   +1.49   +0.000  0.000  8
+tag.py                     +1.26   +1.32   -0.055  0.111  8
+lag.py                     +2.84   +2.84   +0.000  0.000  8
+nit.py                     +1.31   +1.21   +0.102  0.079  8  better
+potodds.py                 +3.29   +3.21   +0.086  0.106  8
+aggro_reg.py               +2.30   +2.29   +0.004  0.012  8
+maniac.py                  +4.35   +4.35   +0.000  0.000  8
+profiler.py                +1.98   +1.97   +0.017  0.118  8
+ctx_flop.py                +1.56   +1.56   -0.001  0.005  8
+ctx_size.py                +0.90   +0.87   +0.029  0.069  8
+agent.py                   +2.24   +1.89   +0.350  0.140  8  better
+agent.py                   +2.35   +2.11   +0.238  0.146  8  better
+agent.py                   +1.96   +1.91   +0.048  0.151  8
+POOL AVERAGE diff                          +0.050  0.019
+max time/half (s): new 5.21  old 5.89   errors 0   WORSE: none

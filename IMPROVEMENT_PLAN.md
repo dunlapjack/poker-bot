@@ -155,10 +155,46 @@ vs v1 / v5 / v6 on fresh seeds: +1.07 / +1.73 / +1.29. Better vs tag, profiler, 
 - **v13 vs v7, NEW seeds 7001-7008 / 8001-8015, full 18-bot panel:** H2H **+1.63 ± 0.14**, pool **+0.33 ± 0.03**. Better vs station, checkfold, tag (+0.18), profiler (+0.18), ctx_flop (+0.56), ctx_size (+0.61), v1/v5/v6 (+1.2 to +1.7). plain -0.025 ± 0.032 (fixed, no longer flagged), maniac -0.025, potodds +0.02. **WORSE: baseline_random -0.092 ± 0.087.** Max time/half 6.1 s at BANK=20 (container), 0 errors.
 - **Random check (done):** v13 vs v12 vs baseline_random on seeds 7001-7008 and 1001-1008 = **exactly 0.000** (identical play; random never qualifies as a station). So the -0.09 vs v7 comes from v12's items 1+2, not from the v13 fix, and v12's own fresh-seed run (5001-5008) didn't flag it -> most likely seed noise (about 1 SE).
 
-## HANDOFF for the next session (start here)
-**State:** root `agent.py`/`strategy.py` are **v13** (promoted Nov 8, ~2:45 am; Jack accepted the -0.09 vs baseline_random flag, inherited from v12 and likely seed noise). `sparring/v13` is the new bar. 18 tests pass; judge match vs always_pot: AGENT1_WIN, 1.4-1.5 s of 8 s, 0 errors. Pushed, NOT resubmitted: Jack resubmits in the morning with the latest SHA.
-**Next:** any new candidate is tested vs `sparring/v13` (tuning seeds), then vs v13 on new seeds (e.g. 9001-9008 / 9101-9115). The results/ cache lives only in the cloud container, so expect to re-play baselines (~37 min per full 303-job run on 2 cores).
+## Session 8 results (Nov 8, overnight 2:57-8:30 am, unattended): v17 (EV_RB 1.10) = best candidate, v16 (EV_RB 1.00) = safe alternative, NOT promoted
+Full table (every run, knobs, seeds, WORSE lists): `sparring/OVERNIGHT_RESULTS.md`; raw reports in `sparring/overnight_logs/`. All runs: full 18-bot panel, BANK=20, cloud container, one job queue.
+`sparring/v14` = v13 + knob `VALTH_SRC`; `sparring/v15` = v14 + preflop-steal knobs + separate `CTX_FOLD`; knob runs use `path::KNOB=V`.
 
-**Session 7 time budget (Jack's rule: state the expected time up front, give progress updates with time left, and name a ceiling):** setup + build v13 ~10 min, tuning run vs v12 ~14 min, v13 + v7 on new seeds 7001-7008 / 8001-8015 ~25 min, PC judge match + pytest + commit ~5 min. Expect ~55 min; **ceiling 90 min**. If v13 still has a WORSE opponent, stop and report; don't start more variants without asking.
-**Promote steps:** copy `sparring/vN/strategy.py` to the root (agent.py root keeps PARTICIPANT), copy tables.npz if needed, `pytest -q tests test_agent.py`, one judge match, commit, push, resubmit with the new SHA (only when Jack says).
-**Testing notes:** run long jobs in the cloud container (stage poker-bot/, `pip install fastapi uvicorn pytest`), never run other CPU jobs alongside a queue, keep `BANK=20` (default). `sparring/v10` holds every Session 6 experiment behind env knobs (CTX_MODE, RN_ON, EV_MODE, EV_RSTRICT, EXP3_ARMS, N_TOP, BASE_BLUFF) for reproducing the tables.
+**Screens vs v13 (tuning seeds 1001-1008 / 2001-2015):**
+| Idea | Knobs | H2H | Pool | WORSE | Verdict |
+|---|---|---|---|---|---|
+| 1. value_th from global fold rate | VALTH_SRC=global | -0.01 | +0.001 | ctx_flop | rejected |
+| 1b. value_th from half-pot ctx rate | VALTH_SRC=half | +0.17 ± 0.10 | +0.003 | none | H2H only |
+| 2. EV_WARM 10 / 25 / 100 | | -0.11 / +0.17 / -0.25 | ~0 | none | not monotonic: noise; rejected |
+| 2. EV_AGGR 0.40 / 0.50 | | -0.74 / +0.14 | -0.013 / +0.001 | 0.40: ctx_size | rejected / H2H only |
+| 2. EV_MARGIN 0 / 0.04 | | +0.06 / -0.07 | +0.010 / -0.007 | 0.04: v1 | neutral / rejected |
+| 2b. EV_R_OOP 0.80 | | 0.00 | +0.007 | none | neutral |
+| **2b. EV_RB 1.00 / 1.10 (was 0.90)** | | **+0.41 / +0.57** | **+0.038 / +0.070** | none | **winners** |
+| 3. CTX_K 2 / 5 | | +0.02 / +0.02 | ~0 | 5: ctx_flop | rejected (3 stays) |
+| 3. ARCH_FOLD 0.58 / 0.66 | | +0.15 / -0.07 | -0.022 / +0.009 | 0.58: ctx_size -0.29 | rejected |
+| 3b. CTX_FOLD 0.58 (postflop only) | | +0.15 | -0.004 | none | H2H only; shows the 0.58 ctx_size loss was the preflop switch |
+| 5. preflop steal vs button-folders | PF_STEAL_TH=0.55 | 0.00 | -0.006 | none | rejected |
+EV_RB is the discount on our equity once our EV-chooser bet gets called. At 0.90 the chooser was too pessimistic and skipped profitable thin bets/bluffs.
+
+**Fresh-seed confirmation (vs v13, full panel):**
+| Candidate | Seeds | H2H | Pool | WORSE |
+|---|---|---|---|---|
+| **v16** (EV_RB 1.00) | 9001-8 / 9101-15 | **+0.261 ± 0.100** | **+0.034 ± 0.014** | none |
+| **v16** | 9201-8 / 9301-15 | **+0.423 ± 0.118** | **+0.023 ± 0.015** | ctx_size -0.062 ± 0.054 (first set +0.028; both sets pooled -0.017 ± 0.037, not flagged) |
+| combo VALTH half + EV_WARM 25 + EV_AGGR 0.50 + EV_RB 1.00 | 9001-8 / 9101-15 | +0.373 ± 0.125 | +0.019 ± 0.020 | none (pool lower than v16 alone, so not pursued) |
+| v17 (EV_RB 1.10) | 9201-8 / 9301-15 | +0.462 ± 0.136 | +0.051 ± 0.019 | **ctx_size -0.105 ± 0.082** |
+| **v17** | 9001-8 / 9101-15 | **+0.480 ± 0.126** | **+0.050 ± 0.019** | none (ctx_size +0.029; both sets pooled -0.038 ± 0.053, not flagged) |
+Max time/half 5.4-5.9 s at BANK=20 (container), 0 errors in every run. v16 vs v14::EV_RB=1.00 on H2H seeds 2001-2002 = exactly 0.000 (same play).
+**Why ctx_size:** it never folds to half-pot bets, so a higher EV_RB makes more thin half-pot bets into a bot that always calls. The loss grows with EV_RB (set 2: 1.00 -0.06, 1.10 -0.11), but set 1 is positive for both, so pooled it is noise-sized (-0.02 / -0.04).
+**Also learned:** the v13 model vs nit already flips to "folder" preflop (global fold 0.66) and raises every button; ctx_size folds 74-92% to flop pot bets and ~0% to half-pot bets, and the EV chooser already finds those pot bluffs.
+
+## HANDOFF for the next session (start here)
+**State (Nov 8, 9:30 am):** root `strategy.py` is now **v17** (EV_RB 1.10), promoted with Jack's approval; `sparring/v17` is the new bar. 18 tests pass; judge match vs always_pot: AGENT1_WIN, 3.9-4.4 s of 8 s in the Cowork VM (slower than the PC), 0 errors. Pushed; Jack resubmits with the new SHA. Session 9 (EV_RB 1.20 = `sparring/v18`, half-pot guard = `sparring/v19`) results go below when done.
+**Best candidate: `sparring/v17`** (v13 with `EV_RB` 0.90 -> 1.10, one line, line 65 of strategy.py). Fresh seeds vs v13, 2 sets (9001-8/9101-15 and 9201-8/9301-15): H2H **+0.480 ± 0.126 / +0.462 ± 0.136**, pool **+0.050 ± 0.019 / +0.051 ± 0.019**. Only flag: ctx_size -0.105 ± 0.082 on set 2 (set 1 +0.029; pooled -0.038 ± 0.053). Max 5.9 s/half at BANK=20, 0 errors.
+**Conservative alternative: `sparring/v16`** (EV_RB 1.00): H2H +0.261 / +0.423, pool +0.034 / +0.023; set 2 ctx_size -0.062 ± 0.054 (pooled -0.017).
+**Waiting on Jack's approval. Promote steps (v17, or v16 the same way):**
+1. `copy sparring\v17\strategy.py strategy.py` (root `agent.py` keeps PARTICIPANT; tables.npz is unchanged).
+2. Copy v17 to be the new bar: it already lives in `sparring/v17`.
+3. `python -m pytest -q tests test_agent.py` (not run overnight; the root wasn't touched) and one `judge_engine.py` match vs always_pot (check time and 0 errors).
+4. Commit, push, resubmit with the new SHA.
+**Next ideas if there's time:** EV_RB 1.20 (the trend 0.90 -> 1.10 is still rising); a ctx_size guard (no EV half-pot bets where the half-pot ctx fold rate is ~0); individual fresh confirms of VALTH_SRC=half and EV_AGGR=0.50 (H2H-only screens, never confirmed).
+**Testing notes:** run long jobs in the cloud container (stage poker-bot/, `pip install fastapi uvicorn pytest httpx numpy`), one job queue, `BANK=20`. `poker-bot/results/` on the PC now holds the full cache (about 4,100 matches incl. v13 on seeds 1001-8, 9001-8, 9201-8): stage it with the code and nothing has to be re-played. `sparring/v14`/`v15` hold every Session 8 knob.

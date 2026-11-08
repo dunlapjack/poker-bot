@@ -62,7 +62,7 @@ EV_R_IP = float(os.environ.get("EV_R_IP", "1.05"))
 EV_R_OOP = float(os.environ.get("EV_R_OOP", "0.90"))
 EV_MARGIN = float(os.environ.get("EV_MARGIN", "0.02"))        # bet only if EV beats check by this x pot
 EV_WARM = int(os.environ.get("EV_WARM", "50"))               # hands of v7 logic before trusting stats
-EV_RB = float(os.environ.get("EV_RB", "0.90"))                # extra realisation once a bet is called
+EV_RB = float(os.environ.get("EV_RB", "1.10"))                # v17: was 0.90 (called bets realise 10% more)
 EV_RAISE = os.environ.get("EV_RAISE", "1") == "1"             # model the opponent raising our bet
 EV_AGGR = float(os.environ.get("EV_AGGR", "0.45"))            # no EV bets vs aggressive opponents
 EV_STATION = os.environ.get("EV_STATION", "0") == "1"         # allow EV bets vs stations

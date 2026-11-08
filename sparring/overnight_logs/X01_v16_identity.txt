@@ -1,0 +1,6 @@
+NEW=sparring/v16/agent.py
+OLD=sparring/v14/agent.py::EV_RB=1.00
+1000-deal halves, pool seeds 1001..1008, h2h seeds 2001..2002
+HEAD-TO-HEAD new vs old   +0.000 ±0.000   (2/2 seeds, 2000 deals)
+opponent                     new     old     diff      ±  seeds
+max time/half (s): new 0.00  old 0.00   errors 0   WORSE: none
